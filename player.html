@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>選手詳細</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+                 "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    margin: 24px;
+    background: #f5f5f5;
+  }
+  a.back {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-size: 13px;
+    text-decoration: none;
+    color: #2563eb;
+  }
+  a.back:hover { text-decoration: underline; }
+  h1 { font-size: 22px; margin: 0 0 10px; }
+
+  /* 2つのレイアウトを並べる親コンテナ */
+  .page-layout {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column; /* スマホ: 縦積み */
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  /* 各ブロック（タイトル＋中身） */
+  .layout-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  /* PCでは左右に並べる */
+  @media (min-width: 768px) {
+    .page-layout {
+      flex-direction: row;
+    }
+    .layout-block {
+      flex: 1 1 0;
+    }
+  }
+
+  .layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .panel-grid {
+    flex: 0 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    background: #fff;
+  }
+  .panel-grid iframe {
+    width: 260px;
+    height: 260px;
+    border: none;
+  }
+  .panel-hand {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .panel-hand img {
+    max-width: 160px;
+    height: auto;
+    display: block;
+  }
+
+  .layout.left  .panel-grid { order: 1; }
+  .layout.left  .panel-hand { order: 2; }
+
+  .layout.right .panel-hand { order: 1; }
+  .layout.right .panel-grid { order: 2; }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back">&larr; 選手一覧に戻る</a>
+<h1 id="playerName">選手名</h1>
+
+<div class="page-layout">
+  <!-- 通常版 5result：スイング軌道のばらつき -->
+  <div class="layout-block">
+    <div class="panel-title">スイング軌道のばらつき</div>
+    <div id="layout" class="layout">
+      <div class="panel-hand">
+        <img id="handImage" src="" alt="">
+      </div>
+      <div class="panel-grid">
+        <iframe id="resultFrame" src=""></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- SWE版 5result_SWE：バットの芯とボールとの距離 -->
+  <div class="layout-block">
+    <div class="panel-title">バットの芯とボールとの距離</div>
+    <div id="layoutSWE" class="layout">
+      <div class="panel-hand">
+        <img id="handImageSWE" src="" alt="">
+      </div>
+      <div class="panel-grid">
+        <iframe id="resultFrameSWE" src=""></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+
+const id     = params.get("id")     || ""; // Oomura など
+const name   = params.get("name")   || ""; // 大村 など
+const hand   = (params.get("hand") || "left").toLowerCase(); // left/right
+const folder = params.get("folder") || ""; // フォルダ名（大村など）
+const idLower = id.toLowerCase();   // momo_5result_SWE.html 用
+
+// 見出し
+document.title = name ? `${name} の結果` : "選手詳細";
+document.getElementById("playerName").textContent = name || id || "選手";
+
+// レイアウト（左右入れ替え）
+const layout     = document.getElementById("layout");
+const layoutSWE  = document.getElementById("layoutSWE");
+layout.classList.add(hand === "right" ? "right" : "left");
+layoutSWE.classList.add(hand === "right" ? "right" : "left");
+
+// 利き手画像（通常版）
+const handImage = document.getElementById("handImage");
+if (hand === "left") {
+  handImage.src = "left.png";
+  handImage.alt = "左打者";
+} else {
+  handImage.src = "right.png";
+  handImage.alt = "右打者";
+}
+
+// 利き手画像（SWE版も同じ）
+const handImageSWE = document.getElementById("handImageSWE");
+if (hand === "left") {
+  handImageSWE.src = "left.png";
+  handImageSWE.alt = "左打者";
+} else {
+  handImageSWE.src = "right.png";
+  handImageSWE.alt = "右打者";
+}
+
+// 5result.html へのパス
+// batter_result/player.html から見て
+// left/大村/Oomura_5result.html
+const framePath = `${hand}/${folder}/${id}_5result.html`;
+document.getElementById("resultFrame").src = framePath;
+
+// 5result_SWE.html へのパス
+// 例: left/大村/momo_5result_SWE.html （id を小文字にしている）
+const framePathSWE = `${hand}/${folder}/${idLower}_5result_SWE.html`;
+document.getElementById("resultFrameSWE").src = framePathSWE;
+</script>
+
+</body>
+</html>

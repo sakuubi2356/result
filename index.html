@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>選手一覧</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+                 "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    margin: 24px;
+    background: #f5f5f5;
+  }
+  h1 { font-size: 22px; margin-bottom: 16px; }
+  ul.player-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  ul.player-list li a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #222;
+    text-align: center;
+    font-weight: 600;
+  }
+  ul.player-list li a:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+  }
+  .hand-label {
+    font-size: 11px;
+    color: #666;
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+<h1>選手一覧</h1>
+
+<ul class="player-list" id="playerList"></ul>
+
+<script>
+// id     : ファイル名プレフィックス (Oomura_5result.html などの Oomura 部分)
+// name   : 画面表示用の名前
+// folder : left/right 配下のフォルダ名（日本語）
+// hand   : "left" or "right"
+const players = [
+  { id: "Oomura",  name: "大村", folder: "大村", hand: "left" },
+  { id: "Ando",    name: "安藤", folder: "安藤", hand: "left" },
+  { id: "Segawa",  name: "瀬川", folder: "瀬川", hand: "left" },
+  { id: "Hayashi", name: "林",   folder: "林",   hand: "right" },
+  { id: "Momo",    name: "百川", folder: "百川", hand: "right" },
+  { id: "Nomura",  name: "野村", folder: "野村", hand: "right" }
+];
+
+const listEl = document.getElementById("playerList");
+
+players.forEach(p => {
+  const li = document.createElement("li");
+  const a  = document.createElement("a");
+
+  const url = `player.html?id=${encodeURIComponent(p.id)}&name=${encodeURIComponent(p.name)}&hand=${p.hand}&folder=${encodeURIComponent(p.folder)}`;
+  a.href = url;
+  a.textContent = p.name;
+
+  const span = document.createElement("span");
+  span.className = "hand-label";
+  span.textContent = p.hand === "left" ? "(左)" : "(右)";
+
+  a.appendChild(span);
+  li.appendChild(a);
+  listEl.appendChild(li);
+});
+</script>
+</body>
+</html>
