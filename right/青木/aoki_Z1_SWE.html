@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>aoki_Z1_SWE</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0; padding: 0;
+      background: #f4f4f4;
+      -webkit-text-size-adjust: 100%;
+    }
+    .page-wrapper { padding: 10px 12px 16px 12px; }
+    .top-row {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 10px;
+    }
+    #plotArea { flex: 1 1 auto; min-width: 0; height: 75vh; }
+    #plot { width: 100%; height: 100%; }
+
+    #trialPanel {
+      width: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+    .trial-btn {
+      width: 100%;
+      padding: 8px 6px;
+      border-radius: 10px;
+      border: 1px solid #1976d2;
+      background: #fff;
+      color: #1976d2;
+      cursor: pointer;
+      font-size: 14px;
+      touch-action: manipulation;
+    }
+    .trial-btn.active { background: #1976d2; color: #fff; }
+
+    #bottomPanel {
+      margin-top: 10px;
+      padding: 10px 12px 12px 12px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #frameLabel { font-size: 14px; line-height: 1.2; }
+
+    #frameSlider {
+      width: 100%;
+      height: 44px;
+      margin: 0;
+      background: transparent;
+      touch-action: manipulation;
+    }
+    #frameSlider::-webkit-slider-runnable-track {
+      height: 10px; border-radius: 999px; background: #d0d0d0;
+    }
+    #frameSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #1976d2;
+      border: 2px solid #fff;
+      margin-top: -12px;
+    }
+
+    .step-btn {
+      height: 44px;
+      min-width: 64px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: 1px solid #1976d2;
+      background: #fff;
+      color: #1976d2;
+      touch-action: manipulation;
+    }
+
+    @media (max-width: 700px) {
+      .top-row { flex-direction: column; }
+      #trialPanel {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .trial-btn { width: auto; min-width: 80px; }
+      #plotArea { height: 60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="top-row">
+      <div id="plotArea"><div id="plot"></div></div>
+      <div id="trialPanel">
+        <div style="font-weight:bold; margin-bottom:4px;">Trial</div>
+        <button class="trial-btn" id="trialBtn_1" data-trial="1">1球目</button>
+          <button class="trial-btn" id="trialBtn_2" data-trial="2">2球目</button>
+          <button class="trial-btn" id="trialBtn_3" data-trial="3">3球目</button>
+          <button class="trial-btn" id="trialBtn_4" data-trial="4">4球目</button>
+      </div>
+    </div>
+
+    <div id="bottomPanel">
+      <div id="frameLabel">Frame:</div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button id="prevBtn" class="step-btn">-</button>
+        <input type="range" id="frameSlider" min="0" max="0" value="0" step="1">
+        <button id="nextBtn" class="step-btn">+</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fig = {"data": [{"line": {"color": "blue", "width": 3}, "mode": "lines", "showlegend": false, "x": [0.3002845, 0.3002845, 0.150155, 2.548099e-05, 0.150155, 0.3002845], "y": [0.150414, -0.150414, -0.150414, -0.0, 0.150414, 0.150414], "z": [-0.39642, -0.39642, -0.39642, -0.39642, -0.39642, -0.39642], "type": "scatter3d"}, {"line": {"color": "blue", "width": 3}, "mode": "lines", "showlegend": false, "x": [0.3002845, 0.3002845, 0.150155, 2.548099e-05, 0.150155, 0.3002845], "y": [0.150414, -0.150414, -0.150414, -0.0, 0.150414, 0.150414], "z": [0.02242154, 0.02242154, 0.02242154, 0.02242154, 0.02242154, 0.02242154], "type": "scatter3d"}, {"line": {"color": "blue", "width": 2.5}, "mode": "lines", "opacity": 0.3, "showlegend": false, "x": [0.3002845, 0.3002845], "y": [0.150414, 0.150414], "z": [-0.39642, 0.02242154], "type": "scatter3d"}, {"line": {"color": "blue", "width": 2.5}, "mode": "lines", "opacity": 0.3, "showlegend": false, "x": [0.3002845, 0.3002845], "y": [-0.150414, -0.150414], "z": [-0.39642, 0.02242154], "type": "scatter3d"}, {"line": {"color": "blue", "width": 2.5}, "mode": "lines", "opacity": 0.3, "showlegend": false, "x": [0.150155, 0.150155], "y": [-0.150414, -0.150414], "z": [-0.39642, 0.02242154], "type": "scatter3d"}, {"line": {"color": "blue", "width": 2.5}, "mode": "lines", "opacity": 0.3, "showlegend": false, "x": [2.548099e-05, 2.548099e-05], "y": [-0.0, -0.0], "z": [-0.39642, 0.02242154], "type": "scatter3d"}, {"line": {"color": "blue", "width": 2.5}, "mode": "lines", "opacity": 0.3, "showlegend": false, "x": [0.150155, 0.150155], "y": [0.150414, 0.150414], "z": [-0.39642, 0.02242154], "type": "scatter3d"}, {"marker": {"color": "white", "line": {"color": "blue", "width": 1}, "size": 5}, "mode": "markers+text", "showlegend": false, "text": ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8", "Z9"], "textposition": "top center", "x": [0.3002845, 0.3002845, 0.3002845, 0.3002845, 0.3002845, 0.3002845, 0.3002845, 0.3002845, 0.3002845], "y": [0.100276, -0.0, -0.100276, 0.100276, -0.0, -0.100276, 0.100276, -0.0, -0.100276], "z": [-0.04738539, -0.04738539, -0.04738539, -0.1869992, -0.1869992, -0.1869992, -0.3266131, -0.3266131, -0.3266131], "type": "scatter3d"}, {"line": {"color": "black", "width": 4}, "mode": "lines", "showlegend": false, "x": [0.159158825874329, -0.363629400730133], "y": [0.23300775885582, 0.658399403095245], "z": [-0.0971695780754089, 0.33380001783371], "type": "scatter3d"}, {"marker": {"color": "white", "line": {"color": "red", "width": 3}, "size": 10, "symbol": "circle"}, "mode": "markers", "showlegend": false, "x": [-0.363629400730133], "y": [0.658399403095245], "z": [0.33380001783371], "type": "scatter3d"}, {"marker": {"color": "orange", "size": 7}, "mode": "markers", "showlegend": false, "x": [0.09381031661537176], "y": [0.28618169887129674], "z": [-0.04329839430465382], "type": "scatter3d"}, {"marker": {"color": "blue", "size": 7, "symbol": "x"}, "mode": "markers", "showlegend": false, "x": [0.154346406459808], "y": [0.100275993347168], "z": [-0.0473853945732117], "type": "scatter3d"}, {"line": {"color": "purple", "dash": "dash", "width": 3}, "mode": "lines", "showlegend": false, "x": [0.09381031661537176, 0.154346406459808], "y": [0.28618169887129674, 0.100275993347168], "z": [-0.04329839430465382, -0.0473853945732117], "type": "scatter3d"}], "layout": {"template": {"data": {"histogram2dcontour": [{"type": "histogram2dcontour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "choropleth": [{"type": "choropleth", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "histogram2d": [{"type": "histogram2d", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmap": [{"type": "heatmap", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmapgl": [{"type": "heatmapgl", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "contourcarpet": [{"type": "contourcarpet", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "contour": [{"type": "contour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "surface": [{"type": "surface", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "mesh3d": [{"type": "mesh3d", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "scatter": [{"fillpattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}, "type": "scatter"}], "parcoords": [{"type": "parcoords", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolargl": [{"type": "scatterpolargl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "bar": [{"error_x": {"color": "#2a3f5f"}, "error_y": {"color": "#2a3f5f"}, "marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "bar"}], "scattergeo": [{"type": "scattergeo", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolar": [{"type": "scatterpolar", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "histogram": [{"marker": {"pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "histogram"}], "scattergl": [{"type": "scattergl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatter3d": [{"type": "scatter3d", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattermapbox": [{"type": "scattermapbox", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterternary": [{"type": "scatterternary", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattercarpet": [{"type": "scattercarpet", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "carpet": [{"aaxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "baxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "type": "carpet"}], "table": [{"cells": {"fill": {"color": "#EBF0F8"}, "line": {"color": "white"}}, "header": {"fill": {"color": "#C8D4E3"}, "line": {"color": "white"}}, "type": "table"}], "barpolar": [{"marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "barpolar"}], "pie": [{"automargin": true, "type": "pie"}]}, "layout": {"autotypenumbers": "strict", "colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#2a3f5f"}, "hovermode": "closest", "hoverlabel": {"align": "left"}, "paper_bgcolor": "white", "plot_bgcolor": "#E5ECF6", "polar": {"bgcolor": "#E5ECF6", "angularaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "radialaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "ternary": {"bgcolor": "#E5ECF6", "aaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "baxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "caxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]]}, "xaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "yaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "scene": {"xaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "yaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "zaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}}, "shapedefaults": {"line": {"color": "#2a3f5f"}}, "annotationdefaults": {"arrowcolor": "#2a3f5f", "arrowhead": 0, "arrowwidth": 1}, "geo": {"bgcolor": "white", "landcolor": "#E5ECF6", "subunitcolor": "white", "showland": true, "showlakes": true, "lakecolor": "white"}, "title": {"x": 0.05}, "mapbox": {"style": "light"}}}, "scene": {"camera": {"eye": {"x": 1.6, "y": 1.6, "z": 1.0}, "center": {"x": 0, "y": 0, "z": 0}, "up": {"x": 0, "y": 0, "z": 1}}, "xaxis": {"title": {"text": "\u6a2a Z [m]"}}, "yaxis": {"title": {"text": "\u5965\u884c X [m]"}}, "zaxis": {"title": {"text": "\u7e26 Y [m]"}}, "aspectmode": "data"}, "margin": {"l": 0, "r": 0, "t": 60, "b": 120}, "title": {"text": "Z1 (Z1)  |  offset=10 cm from TOP"}, "showlegend": false, "uirevision": "KEEP_CAMERA_FOREVER"}};
+    const trialInfo = {"1": [{"index": -6, "is_min": false, "A": [-0.930076420307159, -0.112600937485695, -0.0115423342213035], "B": [-0.246937111020088, 0.254394143819809, 0.185016185045242], "S": [-0.8446840037837549, -0.06672655078470817, 0.013027481510642784], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -5, "is_min": false, "A": [-0.725838899612427, -0.166159480810165, -0.0944925472140312], "B": [-0.200079262256622, 0.347941517829895, 0.220590025186539], "S": [-0.6601189480495424, -0.10189685901786034, -0.05510722752570934], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -4, "is_min": false, "A": [-0.487241506576538, -0.171479761600494, -0.133706539869308], "B": [-0.214373484253883, 0.464895904064178, 0.267004489898682], "S": [-0.45313301110978305, -0.09193282047226464, -0.08361767190309846], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -3, "is_min": false, "A": [-0.236325725913048, -0.0923940092325211, -0.166605412960052], "B": [-0.22783075273037, 0.555520057678223, 0.302580207586288], "S": [-0.23526385422306828, -0.011404747654267938, -0.10795720806405107], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -2, "is_min": false, "A": [-0.00870589725673199, 0.0639702975749969, -0.168634310364723], "B": [-0.264549046754837, 0.633241832256317, 0.331839889287949], "S": [-0.04068628540085696, 0.1351292270762348, -0.1060750462514922], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -1, "is_min": true, "A": [0.159158825874329, 0.23300775885582, -0.0971695780754089], "B": [-0.363629400730133, 0.658399403095245, 0.33380001783371], "S": [0.09381031661537176, 0.28618169887129674, -0.04329839430465382], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 0, "is_min": false, "A": [0.159158825874329, 0.23300775885582, -0.0971695780754089], "B": [-0.363629400730133, 0.658399403095245, 0.33380001783371], "S": [0.09381031661537176, 0.28618169887129674, -0.04329839430465382], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 1, "is_min": false, "A": [0.262254416942596, 0.475139945745468, -0.0352556630969048], "B": [-0.417198598384857, 0.678945422172546, 0.334618806838989], "S": [0.1773228030165287, 0.5006156264024751, 0.010978638573777386], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 2, "is_min": false, "A": [0.283809661865234, 0.719594120979309, 0.0385907962918282], "B": [-0.461759865283966, 0.678169250488281, 0.325662732124329], "S": [0.19061348815836202, 0.7144160131228515, 0.07447478165334345], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 3, "is_min": false, "A": [0.256945937871933, 0.874870181083679, 0.121122159063816], "B": [-0.482822388410568, 0.614037990570068, 0.2783143222332], "S": [0.16447489595535358, 0.8422661568706085, 0.14077117970037004], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 4, "is_min": false, "A": [0.149024859070778, 1.08058500289917, 0.151272937655449], "B": [-0.48135507106781, 0.597047328948975, 0.245147660374641], "S": [0.0702273679275791, 1.0201427937506062, 0.16300727797686365], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}], "2": [{"index": -6, "is_min": false, "A": [-1.00658023357391, -0.0399130880832672, 0.0199497230350971], "B": [-0.243904232978821, 0.179594114422798, 0.12065839022398], "S": [-0.9112457580394131, -0.012474694832880356, 0.03253830319330192], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -5, "is_min": false, "A": [-0.820735275745392, -0.130892276763916, -0.0772733017802238], "B": [-0.178066894412041, 0.275125235319138, 0.171980768442154], "S": [-0.7404017569489632, -0.08014010599283675, -0.04611655419953077], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -4, "is_min": false, "A": [-0.582743048667908, -0.169486150145531, -0.151852637529373], "B": [-0.145273864269257, 0.37982040643692, 0.231400460004807], "S": [-0.5280593970795502, -0.10082282612958698, -0.10394599723760789], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -3, "is_min": false, "A": [-0.327778279781342, -0.143789619207382, -0.169077754020691], "B": [-0.208964571356773, 0.493227332830429, 0.300062566995621], "S": [-0.3129265654775217, -0.06416249617753117, -0.11043521092929105], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -2, "is_min": false, "A": [-0.0712693631649017, -0.0130760539323092, -0.175880923867226], "B": [-0.251075565814972, 0.570192635059357, 0.341291517019272], "S": [-0.09374513906363884, 0.059832534032477395, -0.11123436712418884], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -1, "is_min": true, "A": [0.125895321369171, 0.134214788675308, -0.110405281186104], "B": [-0.355756402015686, 0.585319936275482, 0.341829121112823], "S": [0.06568886495133316, 0.19060292369117882, -0.05387598935400232], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 0, "is_min": false, "A": [0.125895321369171, 0.134214788675308, -0.110405281186104], "B": [-0.355756402015686, 0.585319936275482, 0.341829121112823], "S": [0.06568886495133316, 0.19060292369117882, -0.05387598935400232], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 1, "is_min": false, "A": [0.267338544130325, 0.366635948419571, -0.0157839879393578], "B": [-0.40965148806572, 0.598159909248352, 0.342100024223328], "S": [0.18271477782825274, 0.39557644772197614, 0.028951520071390777], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 2, "is_min": false, "A": [0.320971190929413, 0.600265204906464, 0.112968519330025], "B": [-0.448593854904175, 0.58857649564743, 0.331219345331192], "S": [0.22477559091840965, 0.5988041167156548, 0.14024986386840377], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 3, "is_min": false, "A": [0.311970949172974, 0.77342015504837, 0.208853974938393], "B": [-0.446271777153015, 0.528114974498749, 0.278806179761887], "S": [0.21719060650071847, 0.742757006870966, 0.21759800071490945], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 4, "is_min": false, "A": [0.207144141197205, 0.994940936565399, 0.216362208127975], "B": [-0.433501541614532, 0.517002761363983, 0.250247746706009], "S": [0.12706343209355167, 0.9351986655961232, 0.22059790038422888], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}], "3": [{"index": -6, "is_min": false, "A": [-1.00545251369476, -0.102402158081532, 0.000112158246338367], "B": [-0.280197501182556, 0.162869989871979, 0.209004908800125], "S": [-0.9147956602827831, -0.06924314805552818, 0.02622374539715537], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -5, "is_min": false, "A": [-0.792037069797516, -0.183580905199051, -0.0921648144721985], "B": [-0.216624677181244, 0.252646505832672, 0.252228498458862], "S": [-0.7201105504858866, -0.1290525013856152, -0.04911566817087591], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -4, "is_min": false, "A": [-0.535160958766937, -0.20294301211834, -0.156982392072678], "B": [-0.180850014090538, 0.350077420473099, 0.29978084564209], "S": [-0.4908721079726398, -0.13381548503161766, -0.09988700964822142], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -3, "is_min": false, "A": [-0.270938545465469, -0.168294101953506, -0.140891939401627], "B": [-0.229694038629532, 0.459764808416367, 0.352911114692688], "S": [-0.2657829843684355, -0.08978677253317084, -0.07916658466743587], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -2, "is_min": false, "A": [-0.016700055450201, -0.0276558045297861, -0.120555467903614], "B": [-0.265326887369156, 0.536513924598694, 0.389245569705963], "S": [-0.04777841228658673, 0.042865418070425376, -0.05683033236572989], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -1, "is_min": true, "A": [0.187482386827469, 0.183110803365707, -0.0654415786266327], "B": [-0.309034883975983, 0.594114601612091, 0.408422231674194], "S": [0.12541774897679234, 0.23448626076346618, -0.0062086223806763], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 0, "is_min": false, "A": [0.187482386827469, 0.183110803365707, -0.0654415786266327], "B": [-0.309034883975983, 0.594114601612091, 0.408422231674194], "S": [0.12541774897679234, 0.23448626076346618, -0.0062086223806763], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 1, "is_min": false, "A": [0.311664909124374, 0.346463620662689, 0.0873726084828377], "B": [-0.388474673032761, 0.583068788051605, 0.393677413463593], "S": [0.22414746636596727, 0.3760392648928067, 0.12566070691306155], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 2, "is_min": false, "A": [0.344472050666809, 0.589084446430206, 0.181694850325584], "B": [-0.429321706295013, 0.576242387294769, 0.384373635053635], "S": [0.2477478602583984, 0.5874791895230824, 0.20702969076517738], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 3, "is_min": false, "A": [0.348429620265961, 0.754722893238068, 0.281574904918671], "B": [-0.419639945030212, 0.54008024930954, 0.344802379608154], "S": [0.25242092725036575, 0.7278925634865652, 0.2894783390370026], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 4, "is_min": false, "A": [0.266439825296402, 0.964743554592133, 0.373981118202209], "B": [-0.407051414251328, 0.535754859447479, 0.325213670730591], "S": [0.18225342128966388, 0.9111199682957121, 0.36788518733608516], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}], "4": [{"index": -6, "is_min": false, "A": [-0.891351699829102, 0.129622548818588, 0.0300601907074451], "B": [-0.0919735431671143, 0.105491183698177, 0.0503669716417789], "S": [-0.7914294400420763, 0.12660612847424668, 0.0325985380753939], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -5, "is_min": false, "A": [-0.758609533309937, -0.00340923387557268, -0.0495443753898144], "B": [-0.00309239327907562, 0.206630915403366, 0.108813181519508], "S": [-0.6641699003252854, 0.02284578213787491, -0.029749682771389376], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -4, "is_min": false, "A": [-0.568597197532654, -0.0826645493507385, -0.145427063107491], "B": [0.0668365657329559, 0.297193884849548, 0.157775595784187], "S": [-0.4891679988365436, -0.035182258055058376, -0.10752674110614124], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -3, "is_min": false, "A": [-0.344615161418915, -0.123755514621735, -0.188836872577667], "B": [0.0615032650530338, 0.421404927968979, 0.232907682657242], "S": [-0.29385038009566933, -0.05561048881086361, -0.13611882600499203], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -2, "is_min": false, "A": [-0.0864561200141907, -0.0899350345134735, -0.21937321126461], "B": [0.0577764585614204, 0.515083074569702, 0.283766716718674], "S": [-0.06842704397616713, -0.01430775529012139, -0.15648070730357905], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": -1, "is_min": true, "A": [0.171588227152824, 0.0207277052104473, -0.203426361083984], "B": [0.0230086538940668, 0.598573565483093, 0.329507172107697], "S": [0.15301577873434913, 0.09295844459379934, -0.13680966311810333], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 0, "is_min": false, "A": [0.171588227152824, 0.0207277052104473, -0.203426361083984], "B": [0.0230086538940668, 0.598573565483093, 0.329507172107697], "S": [0.15301577873434913, 0.09295844459379934, -0.13680966311810333], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 1, "is_min": false, "A": [0.371277809143066, 0.147777110338211, -0.117947213351727], "B": [-0.0805018097162247, 0.626266360282898, 0.336962848901749], "S": [0.31480535462685105, 0.20758826886773096, -0.061083453396280254], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 2, "is_min": false, "A": [0.516511023044586, 0.366006374359131, -0.029564606025815], "B": [-0.137701585888863, 0.641798138618469, 0.339142620563507], "S": [0.4347344631464936, 0.400480338054393, 0.016523788157227156], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 3, "is_min": false, "A": [0.599366784095764, 0.486649960279465, 0.118470549583435], "B": [-0.172673225402832, 0.579904198646545, 0.306241303682327], "S": [0.5028617818027699, 0.49830674020890314, 0.1419418941147106], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}, {"index": 4, "is_min": false, "A": [0.601404786109924, 0.713653564453125, 0.20463190972805], "B": [-0.178775414824486, 0.555490970611572, 0.284027338027954], "S": [0.503882275168603, 0.6938832430966654, 0.21455633682296316], "P": [0.154346406459808, 0.100275993347168, -0.0473853945732117]}]};
+
+    const STATIC_COUNT  = 8;
+    const DYNAMIC_COUNT = 5;
+
+    let currentTrial = "1";
+    let currentCamera = null;
+
+    // restyle対象トレース（動的5本）
+    function dynamicTraceIndices() {
+      const arr = [];
+      for (let i = 0; i < DYNAMIC_COUNT; i++) arr.push(STATIC_COUNT + i);
+      return arr;
+    }
+    const DYN_IDX = dynamicTraceIndices();
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const plotDiv = document.getElementById("plot");
+      const slider = document.getElementById("frameSlider");
+      const frameLabel = document.getElementById("frameLabel");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      Plotly.newPlot(
+        plotDiv,
+        fig.data,
+        fig.layout,
+        {
+          responsive: true,
+          displayModeBar: true,
+          scrollZoom: false
+        }
+      ).then(function(gd) {
+        // 初期 camera 保存
+        if (gd.layout && gd.layout.scene && gd.layout.scene.camera) {
+          currentCamera = gd.layout.scene.camera;
+        }
+
+        // ユーザー操作で camera 変化を保存
+        gd.on('plotly_relayout', function(ev) {
+          if (ev['scene.camera']) {
+            currentCamera = ev['scene.camera'];
+            return;
+          }
+          const hasCamKey = Object.keys(ev).some(k => k.startsWith('scene.camera'));
+          if (hasCamKey && gd.layout && gd.layout.scene && gd.layout.scene.camera) {
+            currentCamera = gd.layout.scene.camera;
+          }
+        });
+
+        // 端末回転/リサイズ：Plotlyが勝手に変えることがあるので再適用
+        let resizeTimer = null;
+        function handleResize() {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function() {
+            Plotly.Plots.resize(gd).then(function() {
+              if (currentCamera) Plotly.relayout(gd, {'scene.camera': currentCamera});
+            });
+          }, 150);
+        }
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+
+        // Trial buttons
+        Object.keys(trialInfo).forEach(function(trialKey) {
+          const btn = document.getElementById("trialBtn_" + trialKey);
+          if (!btn) return;
+
+          btn.addEventListener("click", function() {
+            document.querySelectorAll(".trial-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentTrial = trialKey;
+            updateSliderForTrial(gd, currentTrial);
+          });
+        });
+
+        // Slider
+        slider.addEventListener("input", function() {
+          updateFrame(gd, currentTrial, Number(slider.value));
+        });
+        slider.addEventListener("change", function() {
+          updateFrame(gd, currentTrial, Number(slider.value));
+        });
+
+        // ±
+        prevBtn.addEventListener("click", function() {
+          const v = Math.max(Number(slider.min), Number(slider.value) - 1);
+          slider.value = v;
+          updateFrame(gd, currentTrial, v);
+        });
+        nextBtn.addEventListener("click", function() {
+          const v = Math.min(Number(slider.max), Number(slider.value) + 1);
+          slider.value = v;
+          updateFrame(gd, currentTrial, v);
+        });
+
+        // init active
+        const initBtn = document.getElementById("trialBtn_1");
+        if (initBtn) initBtn.classList.add("active");
+
+        // init
+        updateSliderForTrial(gd, currentTrial);
+
+        function updateSliderForTrial(gd, trialKey) {
+          const frames = trialInfo[trialKey];
+          if (!frames || frames.length === 0) return;
+
+          slider.min = 0;
+          slider.max = frames.length - 1;
+
+          // 初期は MIN 位置
+          let initPos = 0;
+          for (let i = 0; i < frames.length; i++) {
+            if (frames[i].is_min) { initPos = i; break; }
+          }
+          slider.value = initPos;
+
+          updateFrame(gd, trialKey, initPos);
+        }
+
+        // ★ここが本丸：restyle で x/y/z だけ更新（レイアウト触らない→カメラ戻らない）
+        function updateFrame(gd, trialKey, idxInTrial) {
+          const frames = trialInfo[trialKey];
+          if (!frames || frames.length === 0) return;
+
+          const clamped = Math.max(0, Math.min(idxInTrial, frames.length - 1));
+          const f = frames[clamped];
+
+          // Bat line (trace 0)
+          const x0 = [f.A[0], f.B[0]];
+          const y0 = [f.A[1], f.B[1]];
+          const z0 = [f.A[2], f.B[2]];
+
+          // Bottom marker (trace 1)
+          const x1 = [f.B[0]];
+          const y1 = [f.B[1]];
+          const z1 = [f.B[2]];
+
+          // Sweet (trace 2)
+          const x2 = [f.S[0]];
+          const y2 = [f.S[1]];
+          const z2 = [f.S[2]];
+
+          // Ball (trace 3)
+          const x3 = [f.P[0]];
+          const y3 = [f.P[1]];
+          const z3 = [f.P[2]];
+
+          // S->P (trace 4)
+          const x4 = [f.S[0], f.P[0]];
+          const y4 = [f.S[1], f.P[1]];
+          const z4 = [f.S[2], f.P[2]];
+
+          // restyle は「配列の配列」にするのがコツ
+          Plotly.restyle(gd, {
+            x: [x0, x1, x2, x3, x4],
+            y: [y0, y1, y2, y3, y4],
+            z: [z0, z1, z2, z3, z4],
+          }, DYN_IDX).then(function() {
+            // 念押し：カメラ保持（restyleだけなら基本不要だが、iOS保険）
+            if (currentCamera) Plotly.relayout(gd, {'scene.camera': currentCamera});
+          });
+
+          frameLabel.textContent =
+            "Trial " + trialKey +
+            " / frame index = " + f.index +
+            " (step " + clamped + ")" +
+            (f.is_min ? "  ★MIN" : "");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
